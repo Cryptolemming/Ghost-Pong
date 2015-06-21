@@ -1,0 +1,45 @@
+body {
+	background: black;
+	background-size: cover;
+	color: white;
+}
+
+h1 {
+	font-size: 1em;
+	text-align: center;
+	font-family: Georgia;
+}
+
+ul {
+	list-style-type: none;
+	display: inline;	
+}
+
+canvas {
+	width: 90%;
+	margin-left: 5%;
+	border-top: 1px solid gray;
+	border-bottom: 1px solid gray;
+	border-left: 1px dashed gray;
+	border-right: 1px dashed gray;
+}
+
+.head {
+	width: 100%;
+	padding-bottom: .5%;
+}
+
+.title {
+	list-style-type: none;
+	display: inline !important;
+}
+
+.title > li {
+	float: left;
+}
+
+.prefix {
+	font-style: italic;
+	font-weight: 900;
+	margin-left: 47%;
+}
