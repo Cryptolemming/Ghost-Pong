@@ -34,7 +34,7 @@
 	canvas.height = height();
 	
 	// canvas context for 2D
-	var context = canvas.getContext('2d');
+	var ctx = canvas.getContext('2d');
 	
 	// create the canvas when window loads and begin animating
 	window.onload = function() {
@@ -48,11 +48,29 @@
 		render();
 		animate(step);
 	};
+	
+	// define interaction
+	var keysDown = {};
+	var keysToggle = {};
+	
+	// when a key is pressed
+	window.addEventListener('keydown', function(e) {
+		keysDown[e.keyCode] = true;
+		keysToggle[e.keyCode] = keysToggle[e.keyCode] == false ? true : false;
+	});
+	
+	// when a key is let go
+	window.addEventListener('keyup', function(e) {
+		delete keysDown[e.keyCode];
+	});
 
 // END - General Animation and Canvas definitions
 
 // START - Game Asset Definitions and Rendering
 
+	// scoring and ghost counter text
+	
+	
 	// define a game paddle
 	function Paddle(x, y, width, height) {
 		this.x = x;
@@ -63,45 +81,83 @@
 		this.y_speed = 0;
 	};
 	
-	// add render method to paddle prototype
-	Paddle.prototype.render = function() {
-		context.fillStyle = "white";
-		context.fillRect(this.x, this.y, this.width, this.height);
+	function Score(x, y, count) {
+		this.x = x;
+		this.y = y;
+		this.count = 0;
 	};
 	
 	// define player and computer paddles
 	function Player() {
-		this.paddle = new Paddle(.98*width(), .4*height() , .01*width(), .2*height());
+		this.paddle = new Paddle(.98*canvas.width, .4*canvas.height, .01*canvas.width, .2*canvas.height);
 	};
 	
 	function Computer() {
-		this.paddle = new Paddle(.01*width(), .4*height(), .01*width(), .2*height());
+		this.paddle = new Paddle(.01*canvas.width, .4*canvas.height, .01*canvas.width, .2*canvas.height);
+	};
+	
+	function Ghost() {
+		this.paddle = new Paddle(.495*canvas.width, .4*canvas.height, .01*canvas.width, .2*canvas.height);
+	};
+	
+	function ScoreOne() {
+		this.score = new Score(.83*canvas.width, .05*canvas.height, 0);
+	};
+	
+	function ScoreTwo() {
+		this.score = new Score(.05*canvas.width, .05*canvas.height, 0);
+	};
+	
+	// add render method to paddle prototype
+	Paddle.prototype.render = function(color) {
+		ctx.fillStyle = color;
+		ctx.fillRect(this.x, this.y, this.width, this.height);
 	};
 	
 	// add render methods to player and computer prototypes which render paddles
 	Player.prototype.render = function() {
-		this.paddle.render();
+		this.paddle.render('white');
 	};
 	
 	Computer.prototype.render = function() {
-		this.paddle.render();
+		this.paddle.render('white');
 	};
 	
+	Ghost.prototype.render = function() {
+		this.paddle.render('rgba(255, 255, 255, .2)');
+	};
+	
+	Score.prototype.render = function() {
+		ctx.font = '20px Helvetica';
+		ctx.fillStyle = 'rgba(255, 255, 255, .6)';
+		ctx.fillText('Score: ' + this.count, this.x, this.y);
+	};
+	
+	ScoreOne.prototype.render = function() {
+		this.score.render();
+	};
+	
+	ScoreTwo.prototype.render = function() {
+		this.score.render();
+	};
+
 	// define game ball
 	function Ball(x, y) {
-		this.radius = .01*canvas.width;
+		this.radius = .02*canvas.height;
 		this.x = x;
 		this.y = y;
 		this.x_speed = Math.random() >= .5 ? .5*this.radius : -.5*this.radius;
 		this.y_speed = 0;
+		this.score1 = 0;
+		this.score2 = 0;
 	};
 	
 	// add render method to ball prototype
 	Ball.prototype.render = function() {
-		context.beginPath();
-		context.arc(this.x, this.y, this.radius, 0*Math.PI, 2*Math.PI, false);
-		context.fillStyle = "white";
-		context.fill();
+		ctx.beginPath();
+		ctx.arc(this.x, this.y, this.radius, 0*Math.PI, 2*Math.PI, false);
+		ctx.fillStyle = "white";
+		ctx.fill();
 	};
 
 // END - Game Asset Definitions and Rendering
@@ -112,6 +168,9 @@
 	var update = function() {
 		player.update();
 		computer.update(ball);
+		ghost.update();
+		scoreone.update(ball);
+		scoretwo.update(ball);
 		ball.update(player.paddle, computer.paddle);
 	};
 	
@@ -130,10 +189,20 @@
 				this.paddle.move(0, 0);
 			}
 		}
+	};	
+
+	Ghost.prototype.update = function() {
+		for(var key in keysToggle) {
+			var value = Number(key);
+			if(value == 71) {
+				
+			}
+		}
 	};
 	
 	// AI 
 	Computer.prototype.update = function(ball) {
+		// take the position of ball top
 		var y_pos = ball.y;
 		// take the difference between the center of the paddle and the ball
 		var diff = -((this.paddle.y + (this.paddle.height / 2)) - y_pos);
@@ -143,6 +212,7 @@
 		} else if(diff > 0 && diff > .02*canvas.height) { // max speed down
 			diff = .02*canvas.height;
 		}
+		// move the paddle so its center aligns with the center of the ball
 		this.paddle.move(0, diff);
 		// computer paddle goes off screen to top
 		if(this.paddle.y < 0) {
@@ -170,6 +240,16 @@
 		}
 	};
 	
+	// player score updating - computer scores a point
+	ScoreOne.prototype.update = function(ball) {
+		this.score.count = ball.score1;
+	};
+	
+	// computer score updating - player scores a point
+	ScoreTwo.prototype.update = function(ball) {
+		this.score.count = ball.score2;
+	};
+	
 	// ball position updating / movement
 	Ball.prototype.update = function(paddle1, paddle2) {
 		this.x += this.x_speed;
@@ -189,7 +269,17 @@
 		}
 		
 		if(this.x < 0 || this. x > width()) { // point was scored
+		  if(this.x < 0) {
+			  // player scores
+			  this.score2 += 2;
+		  } else if(this.x > canvas.width) {
+			  //computer scores
+			  this.score1 += 1;
+		  }
+		  console.log(this.score1);
+		  // randomize starting ball direction
 		  this.x_speed = Math.random() >= .5 ? .5*this.radius : -.5*this.radius;
+		  // restore default game parameters
 		  this.y_speed = 0;
 		  this.x = canvas.width/2 - this.radius;
 		  this.y = canvas.height/2 - this.radius;
@@ -199,14 +289,14 @@
 			if(top_x < (paddle1.x + paddle1.width) && bottom_x > paddle1.x && top_y < (paddle1.y + paddle1.height) && bottom_y > (paddle1.y)) {
 				// hitting player paddle right of screen
 				this.x_speed = -this.radius;
-				this.y_speed = (paddle1.y_speed/2);
+				this.y_speed += (paddle1.y_speed/6);
 				this.x += this.x_speed;
 			}
 		} else {
 			if(bottom_x > (paddle2.x + paddle2.width) && top_x < (paddle2.x + paddle2.width) && top_y < (paddle2.y + paddle2.height) && bottom_y > (paddle2.y)) {
 				// hitting computer paddle left of screen
 				this.x_speed = this.radius;
-				this.y_speed = (paddle2.y_speed/2);
+				this.y_speed += (paddle2.y_speed/6);
 				this.x += this.x_speed;
 			}
 		}
@@ -214,33 +304,26 @@
 
 // END - Game Asset Update Mechanisms
 
-// START - Interaction and Initialization
-
-	// define the interaction keys
-	var keysDown = {};
-	
-	// when a key is pressed
-	window.addEventListener('keydown', function(event) {
-		keysDown[event.keyCode] = true;
-	});
-	
-	// when a key is let go
-	window.addEventListener('keyup', function(event) {
-		delete keysDown[event.keyCode];
-	});
+// START - Initialization
 	
 	// game asset calls
 	var player = new Player();
 	var computer = new Computer();
-	var ball = new Ball((canvas.width/2 - .01*canvas.width), (canvas.height/2 - .01*canvas.height));
+	var ghost = new Ghost();
+	var scoreone = new ScoreOne();
+	var scoretwo = new ScoreTwo();
+	var ball = new Ball((canvas.width/2 - .01*canvas.height), (canvas.height/2 - .01*canvas.height));
 	
 	// render the board and the game assets
 	var render = function() {
-		context.fillStyle = "black";
-		context.fillRect(0, 0, width(), height());
+		ctx.fillStyle = "black";
+		ctx.fillRect(0, 0, width(), height());
 		player.render();
 		computer.render();
 		ball.render();
+		ghost.render();
+		scoreone.render();
+		scoretwo.render();
 	};
 
-// END - Interaction and Initialization
+// END - Initialization
