@@ -100,7 +100,7 @@
 	// define game assets
 	function Player() {
 		this.paddle = new Paddle(.98*canvas.width, .4*canvas.height, .01*canvas.width, .2*canvas.height, 'white');
-		this.ghost = new Paddle(.495*canvas.width, .4*canvas.height, .01*canvas.width, .2*canvas.height, 'rgba(255, 255, 255, 0)');
+		this.ghost = new Paddle(.5*canvas.width, .4*canvas.height, .01*canvas.width, .2*canvas.height, 'rgba(255, 255, 255, 0)');
 	};
 	
 	function Computer() {
@@ -280,14 +280,19 @@
 		}
 		
 		// hitting the paddles
-		if(top_x > (canvas.width / 2)) {
+		  // if the ghost is active and ball in range of player
+		if((top_x > (canvas.width / 2)) && ghost.color == 'rgba(255, 255, 255, .4)') {
+			if(top_x < (ghost.x + ghost.width) && bottom_x > ghost.x && top_y < (ghost.y + ghost.height) && bottom_y > (ghost.y)) {
+				// hitting ghost paddle right of screen
+				playerPaddleHitBall(ghost);
+			}
+		  // if the ghost is not active and ball in range of player
+		} else if(top_x > (canvas.width / 2)) {
 			if(top_x < (paddle1.x + paddle1.width) && bottom_x > paddle1.x && top_y < (paddle1.y + paddle1.height) && bottom_y > (paddle1.y)) {
 				// hitting player paddle right of screen
 				playerPaddleHitBall(paddle1);
-				// hitting ghost paddle if it is active
-			} else if(ghost.color == 'rgba(255, 255, 255, .4)' && top_x < (ghost.x + ghost.width) && bottom_x > ghost.x && top_y < (ghost.y + ghost.height) && bottom_y > (ghost.y)) {
-				playerPaddleHitBall(ghost);
 			}
+		  // if ball in range of computer
 		} else {
 			if(bottom_x > (paddle2.x + paddle2.width) && top_x < (paddle2.x + paddle2.width) && top_y < (paddle2.y + paddle2.height) && bottom_y > (paddle2.y)) {
 				// hitting computer paddle left of screen
