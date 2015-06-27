@@ -56,7 +56,7 @@
 	// when a key is pressed
 	window.addEventListener('keydown', function(e) {
 		keysDown[e.keyCode] = true;
-		keysToggle[e.keyCode] = keysToggle[e.keyCode] == false ? true : false;
+		keysToggle[e.keyCode] = keysToggle[e.keyCode] == true ? false : true;
 	});
 	
 	// when a key is let go
@@ -67,37 +67,44 @@
 // END - General Animation and Canvas definitions
 
 // START - Game Asset Definitions and Rendering
-
-	// scoring and ghost counter text
-	
 	
 	// define a game paddle
-	function Paddle(x, y, width, height) {
+	function Paddle(x, y, width, height, color) {
 		this.x = x;
 		this.y = y;
 		this.width = width;
 		this.height = height;
 		this.x_speed = 0;
 		this.y_speed = 0;
+		this.color = color;
 	};
 	
+	// define a score	
 	function Score(x, y, count) {
 		this.x = x;
 		this.y = y;
 		this.count = 0;
 	};
 	
-	// define player and computer paddles
+	// define a game ball
+	function Ball(x, y) {
+		this.radius = .01*canvas.width;
+		this.x = x;
+		this.y = y;
+		this.x_speed = Math.random() >= .5 ? .5*this.radius : -.5*this.radius;
+		this.y_speed = 0;
+		this.score1 = 0;
+		this.score2 = 0;
+	};
+	
+	// define game assets
 	function Player() {
-		this.paddle = new Paddle(.98*canvas.width, .4*canvas.height, .01*canvas.width, .2*canvas.height);
+		this.paddle = new Paddle(.98*canvas.width, .4*canvas.height, .01*canvas.width, .2*canvas.height, 'white');
+		this.ghost = new Paddle(.495*canvas.width, .4*canvas.height, .01*canvas.width, .2*canvas.height, 'rgba(255, 255, 255, 0)');
 	};
 	
 	function Computer() {
-		this.paddle = new Paddle(.01*canvas.width, .4*canvas.height, .01*canvas.width, .2*canvas.height);
-	};
-	
-	function Ghost() {
-		this.paddle = new Paddle(.495*canvas.width, .4*canvas.height, .01*canvas.width, .2*canvas.height);
+		this.paddle = new Paddle(.01*canvas.width, .4*canvas.height, .01*canvas.width, .2*canvas.height, 'white');
 	};
 	
 	function ScoreOne() {
@@ -109,28 +116,34 @@
 	};
 	
 	// add render method to paddle prototype
-	Paddle.prototype.render = function(color) {
-		ctx.fillStyle = color;
+	Paddle.prototype.render = function() {
+		ctx.fillStyle = this.color;
 		ctx.fillRect(this.x, this.y, this.width, this.height);
 	};
 	
-	// add render methods to player and computer prototypes which render paddles
-	Player.prototype.render = function() {
-		this.paddle.render('white');
-	};
-	
-	Computer.prototype.render = function() {
-		this.paddle.render('white');
-	};
-	
-	Ghost.prototype.render = function() {
-		this.paddle.render('rgba(255, 255, 255, .2)');
-	};
-	
+	// add render method to score prototype
 	Score.prototype.render = function() {
 		ctx.font = '20px Helvetica';
 		ctx.fillStyle = 'rgba(255, 255, 255, .6)';
 		ctx.fillText('Score: ' + this.count, this.x, this.y);
+	};
+	
+	// add render method to ball prototype
+	Ball.prototype.render = function() {
+		ctx.beginPath();
+		ctx.arc(this.x, this.y, this.radius, 0*Math.PI, 2*Math.PI, false);
+		ctx.fillStyle = "white";
+		ctx.fill();
+	};
+	
+	// utilize renders for game assets
+	Player.prototype.render = function() {
+		this.paddle.render();
+		this.ghost.render();
+	};
+	
+	Computer.prototype.render = function() {
+		this.paddle.render('white');
 	};
 	
 	ScoreOne.prototype.render = function() {
@@ -141,25 +154,6 @@
 		this.score.render();
 	};
 
-	// define game ball
-	function Ball(x, y) {
-		this.radius = .02*canvas.height;
-		this.x = x;
-		this.y = y;
-		this.x_speed = Math.random() >= .5 ? .5*this.radius : -.5*this.radius;
-		this.y_speed = 0;
-		this.score1 = 0;
-		this.score2 = 0;
-	};
-	
-	// add render method to ball prototype
-	Ball.prototype.render = function() {
-		ctx.beginPath();
-		ctx.arc(this.x, this.y, this.radius, 0*Math.PI, 2*Math.PI, false);
-		ctx.fillStyle = "white";
-		ctx.fill();
-	};
-
 // END - Game Asset Definitions and Rendering
 
 // START - Game Asset Update Mechanisms
@@ -168,7 +162,6 @@
 	var update = function() {
 		player.update();
 		computer.update(ball);
-		ghost.update();
 		scoreone.update(ball);
 		scoretwo.update(ball);
 		ball.update(player.paddle, computer.paddle);
@@ -176,36 +169,52 @@
 	
 	// player position updating / movement
 	Player.prototype.update = function() {
+		var _this = this;
+		var lowercaseG = keysToggle[71];
+		
 		for(var key in keysDown) {
 			var value = Number(key);
-			// up arrow
+			if(lowercaseG) {
+				toggleGhost(value);
+			} else {
+				togglePlayer(value);
+			}
+		};
+		
+		function togglePlayer(value) {
+			_this.ghost.color = 'rgba(255, 255, 255, 0)';
 			if(value == 38) {
 				// paddle moves by 10% of paddle height
-				this.paddle.move(0, -(.02*canvas.height));
-			// down arrow
+				_this.paddle.move(0, -(.02*canvas.height));
 			} else if(value == 40) {
-				this.paddle.move(0, .02*canvas.height);
+				_this.paddle.move(0, .02*canvas.height);
 			} else {
-				this.paddle.move(0, 0);
+				_this.paddle.move(0, 0);
 			}
-		}
+		};
+		
+		function toggleGhost(value) {
+			_this.ghost.color = 'rgba(255, 255, 255, .4)';
+			moveGhost(value);
+		};
+		
+		function moveGhost(value) {
+			if(value == 38) {
+				_this.ghost.move(0, -(.02*canvas.height));
+			} else if(value == 40) {
+				_this.ghost.move(0, .02*canvas.height);
+			} else {
+				_this.ghost.move(0, 0);
+			}
+		};
 	};	
-
-	Ghost.prototype.update = function() {
-		for(var key in keysToggle) {
-			var value = Number(key);
-			if(value == 71) {
-				
-			}
-		}
-	};
 	
 	// AI 
 	Computer.prototype.update = function(ball) {
 		// take the position of ball top
-		var y_pos = ball.y;
+		var y_pos = ball.y + ball.radius;
 		// take the difference between the center of the paddle and the ball
-		var diff = -((this.paddle.y + (this.paddle.height / 2)) - y_pos);
+		var diff = -(this.paddle.y + this.paddle.height / 2 - y_pos);
 		// limit AI paddle speed
 		if(diff < 0 && diff < -.02*canvas.height) { // max speed up
 			diff = -.02*canvas.height;
@@ -259,7 +268,8 @@
 		var top_y = this.y - this.radius;
 		var bottom_x = this.x + this.radius;
 		var bottom_y = this.y + this.radius;
-	
+		
+		// verical boundaries
 		if(this.y - this.radius < 0) { // hitting the top wall
 		  this.y = this.radius;
 		  this.y_speed = -this.y_speed;	
@@ -268,23 +278,7 @@
 		  this.y_speed = -this.y_speed;
 		}
 		
-		if(this.x < 0 || this. x > width()) { // point was scored
-		  if(this.x < 0) {
-			  // player scores
-			  this.score2 += 2;
-		  } else if(this.x > canvas.width) {
-			  //computer scores
-			  this.score1 += 1;
-		  }
-		  console.log(this.score1);
-		  // randomize starting ball direction
-		  this.x_speed = Math.random() >= .5 ? .5*this.radius : -.5*this.radius;
-		  // restore default game parameters
-		  this.y_speed = 0;
-		  this.x = canvas.width/2 - this.radius;
-		  this.y = canvas.height/2 - this.radius;
-		}
-		
+		// hitting the paddles
 		if(top_x > (canvas.width / 2)) {
 			if(top_x < (paddle1.x + paddle1.width) && bottom_x > paddle1.x && top_y < (paddle1.y + paddle1.height) && bottom_y > (paddle1.y)) {
 				// hitting player paddle right of screen
@@ -300,6 +294,23 @@
 				this.x += this.x_speed;
 			}
 		}
+		
+		// reset and scoring
+		if(this.x < 0 || this. x > width()) { // point was scored
+		  if(this.x < 0) {
+			  // player scores
+			  this.score1 += 1;
+		  } else if(this.x > canvas.width) {
+			  //computer scores
+			  this.score2 += 1;
+		  }
+		  // reset - randomize starting ball direction
+		  this.x_speed = Math.random() >= .5 ? .5*this.radius : -.5*this.radius;
+		  // reset game parameters
+		  this.y_speed = 0;
+		  this.x = canvas.width/2 - .01*canvas.width;
+		  this.y = canvas.height/2 - .01*canvas.width;
+		}
 	};
 
 // END - Game Asset Update Mechanisms
@@ -309,10 +320,9 @@
 	// game asset calls
 	var player = new Player();
 	var computer = new Computer();
-	var ghost = new Ghost();
 	var scoreone = new ScoreOne();
 	var scoretwo = new ScoreTwo();
-	var ball = new Ball((canvas.width/2 - .01*canvas.height), (canvas.height/2 - .01*canvas.height));
+	var ball = new Ball((canvas.width/2 - .01*canvas.width), (canvas.height/2 - .01*canvas.width));
 	
 	// render the board and the game assets
 	var render = function() {
@@ -321,7 +331,6 @@
 		player.render();
 		computer.render();
 		ball.render();
-		ghost.render();
 		scoreone.render();
 		scoretwo.render();
 	};
