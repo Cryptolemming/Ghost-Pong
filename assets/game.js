@@ -164,7 +164,7 @@
 		computer.update(ball);
 		scoreone.update(ball);
 		scoretwo.update(ball);
-		ball.update(player.paddle, computer.paddle);
+		ball.update(player.paddle, computer.paddle, player.ghost);
 	};
 	
 	// player position updating / movement
@@ -260,7 +260,8 @@
 	};
 	
 	// ball position updating / movement
-	Ball.prototype.update = function(paddle1, paddle2) {
+	Ball.prototype.update = function(paddle1, paddle2, ghost) {
+		var _this = this;
 		this.x += this.x_speed;
 		this.y += this.y_speed;
 		// ball definition
@@ -282,16 +283,15 @@
 		if(top_x > (canvas.width / 2)) {
 			if(top_x < (paddle1.x + paddle1.width) && bottom_x > paddle1.x && top_y < (paddle1.y + paddle1.height) && bottom_y > (paddle1.y)) {
 				// hitting player paddle right of screen
-				this.x_speed = -this.radius;
-				this.y_speed += (paddle1.y_speed/6);
-				this.x += this.x_speed;
+				playerPaddleHitBall(paddle1);
+				// hitting ghost paddle if it is active
+			} else if(ghost.color == 'rgba(255, 255, 255, .4)' && top_x < (ghost.x + ghost.width) && bottom_x > ghost.x && top_y < (ghost.y + ghost.height) && bottom_y > (ghost.y)) {
+				playerPaddleHitBall(ghost);
 			}
 		} else {
 			if(bottom_x > (paddle2.x + paddle2.width) && top_x < (paddle2.x + paddle2.width) && top_y < (paddle2.y + paddle2.height) && bottom_y > (paddle2.y)) {
 				// hitting computer paddle left of screen
-				this.x_speed = this.radius;
-				this.y_speed += (paddle2.y_speed/6);
-				this.x += this.x_speed;
+				computerPaddleHitBall();
 			}
 		}
 		
@@ -310,6 +310,20 @@
 		  this.y_speed = 0;
 		  this.x = canvas.width/2 - .01*canvas.width;
 		  this.y = canvas.height/2 - .01*canvas.width;
+		}
+		
+		// ball movement after hitting player paddles
+		function playerPaddleHitBall(paddle) {
+			_this.x_speed = -_this.radius;
+			_this.y_speed += (paddle.y_speed/6);
+			_this.x += _this.x_speed;
+		}
+		
+		// ball movement after hitting computer paddle
+		function computerPaddleHitBall() {
+			_this.x_speed = _this.radius;
+			_this.y_speed += (paddle2.y_speed/6);
+			_this.x += _this.x_speed;
 		}
 	};
 
