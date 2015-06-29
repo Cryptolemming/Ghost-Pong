@@ -256,6 +256,7 @@
 		};
 	};	
 	
+	// global is ghost active hack...
 	var isComputerGhostActive = false;
 	
 	// AI 
@@ -267,15 +268,13 @@
 		
 		// determine which paddle takes focus
 		function activePaddle() {
-			// if ghost mode is available
+			// if ghost mode is available and ghost is active
 			if(!(this.ball.ghostcounter2 < 0) && isComputerGhostActive) {
 				// show the ghost
 				renderGhost();
-				// declare speed and move ghost
-					
 			// if ghost mode is not available and/or active
 			} else {
-				// make ghost disappear
+				// make ghost disappear if it is there
 				_this.ghost.color = 'rgba(255, 255, 255, 0)';
 				// declare speed and move player
 				paddleActivation(_this.paddle);
@@ -302,9 +301,6 @@
 			_this.ghost.color = 'rgba(255, 255, 255, .4)';
 			paddleActivation(_this.ghost);
 		}
-		
-		// activate the ghost 33% of the time that it is possible
-		
 	};
 	
 	// paddle movement
@@ -366,12 +362,15 @@
 		  // if the ghost is active and ball in range of ghost
 		if(top_x > (canvas.width / 2) && ghost1.color === 'rgba(255, 255, 255, .4)') {
 			if(top_x < (ghost1.x + ghost1.width) && bottom_x > ghost1.x && top_y < (ghost1.y + ghost1.height) && bottom_y > (ghost1.y)) {
-				// hitting ghost paddle right of screen
+				// hitting player ghost paddle on right of screen
 				playerPaddleHitBall(ghost1);
+				// make ghost disappear after timeout
 				setTimeout(function() {
 					ghost1.color = 'rgba(255, 255, 255, 0)';
 				}, 150);
+				// reset ghostcounter for player1
 				this.ghostcounter1 = -5;
+				// reset 'g' button toggle to false
 				keysToggle[71] = false;
 			}
 		  // if the ghost is not active and ball in range of player
@@ -379,23 +378,31 @@
 			if(top_x < (paddle1.x + paddle1.width) && bottom_x > paddle1.x && top_y < (paddle1.y + paddle1.height) && bottom_y > (paddle1.y)) {
 				// hitting player paddle right of screen
 				playerPaddleHitBall(paddle1);
+				// count down ghost counter and prepare for toggle
 				ghostCounterOneCountDown();
+				// set computer ghost to active if possible and based on random generator
 				activateComputerGhost();
 			}
-		  // if ball in range of computer
+		// if ball in range of computer and ghost is active
 		} else if(bottom_x > (canvas.width / 2) && this.x_speed < 0 && ghost2.color === 'rgba(255, 255, 255, .4)') {
 			if(bottom_x > (ghost2.x + ghost2.width) && top_x < (ghost2.x + ghost2.width) && top_y < (ghost2.y + ghost2.height) && bottom_y > (ghost2.y)) {
+				// hitting computer ghost paddle on left of screen
 				computerPaddleHitBall(ghost2);
+				// make ghost disappear after timeout
 				setTimeout(function() {
 					ghost2.color = 'rgba(255, 255, 255, 0)';
 				}, 150);
+				// reset ghostcounter for computer
 				this.ghostcounter2 = -5;
+				// reset ghost random generator
 				isComputerGhostActive = false;
 			}
+		// if ball in range of comptuer and ghost is not active
 		} else if(bottom_x < (canvas.width / 2) && ghost2.color !== 'rgba(255, 255, 255, .4)') {
 			if(bottom_x > (paddle2.x + paddle2.width) && top_x < (paddle2.x + paddle2.width) && top_y < (paddle2.y + paddle2.height) && bottom_y > (paddle2.y)) {
 				// hitting computer paddle left of screen
 				computerPaddleHitBall(paddle2);
+				// count down computer ghost counter and prepare for toggle
 				ghostCounterTwoCountDown();
 			}
 		}
@@ -461,6 +468,7 @@
 		function randomizeComputerGhost() {
 			if(isComputerGhostActive === false) {
 				var random = Math.random();
+				// %33 chance of ghost appearing when possible
 				if(random <= .33) {
 					isComputerGhostActive = true;
 				}
@@ -481,7 +489,7 @@
 		// ghost counter countdown for the computer after ball is hit
 		function ghostCounterTwoCountDown() {
 			if(_this.ghostcounter2 === -1) {
-				_this.ghostcounter2 = 'AI = 33% chance';
+				_this.ghostcounter2 = '33% chance';
 			} else if(_this.ghostcounter2 < 0) {
 				_this.ghostcounter2 += 1;
 			} 
