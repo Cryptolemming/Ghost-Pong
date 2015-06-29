@@ -7,7 +7,9 @@
 	  function(callback) { window.setTimeout(callback, 1000/60) };
 	
 	// create the canvas
+	var div = document.getElementById('game');
 	var canvas = document.createElement('canvas');
+	
 	
 	// function to get window width
 	var width = function getActualWidth() {
@@ -38,7 +40,7 @@
 	
 	// create the canvas when window loads and begin animating
 	window.onload = function() {
-		document.body.appendChild(canvas);
+		div.appendChild(canvas);
 		animate(step);
 	};
 	
@@ -123,19 +125,19 @@
 	};
 	
 	function ScoreOne() {
-		this.score = new Score(.78*canvas.width, .05*canvas.height, 0);
+		this.score = new Score(canvas.width/2 + 80, .05*canvas.height, 0);
 	};
 	
 	function ScoreTwo() {
-		this.score = new Score(.05*canvas.width, .05*canvas.height, 0);
+		this.score = new Score(canvas.width/2 - 280, .05*canvas.height, 0);
 	};
 	
 	function GhostCounterOne() {
-		this.ghostCounter = new GhostCounter(.85*canvas.width, .05*canvas.height, -5);
+		this.ghostCounter = new GhostCounter(canvas.width/2 + 180, .05*canvas.height, -5);
 	};
 	
 	function GhostCounterTwo() {
-		this.ghostCounter = new GhostCounter(.12*canvas.width, .05*canvas.height, -5);
+		this.ghostCounter = new GhostCounter(canvas.width/2 - 180, .05*canvas.height, -5);
 	};
 	
 	// add render method to paddle prototype
@@ -146,15 +148,15 @@
 	
 	// add render method to score prototype
 	Score.prototype.render = function() {
-		ctx.font = '20px Helvetica';
-		ctx.fillStyle = 'rgba(255, 255, 255, .6)';
+		ctx.font = '18px Helvetica';
+		ctx.fillStyle = 'rgba(255, 255, 255, .5)';
 		ctx.fillText('Score: ' + this.count, this.x, this.y);
 	};
 	
 	// add render method to ghost countdown property
 	GhostCounter.prototype.render = function() {
-		ctx.font = '20px Helvetica';
-		ctx.fillStyle = 'rgba(255, 255, 255, .6)';
+		ctx.font = '18px Helvetica';
+		ctx.fillStyle = 'rgba(255, 255, 255, .5)';
 		ctx.fillText('Ghost: ' + this.count, this.x, this.y);
 	};
 	
@@ -489,7 +491,7 @@
 		// ghost counter countdown for the computer after ball is hit
 		function ghostCounterTwoCountDown() {
 			if(_this.ghostcounter2 === -1) {
-				_this.ghostcounter2 = '33% chance';
+				_this.ghostcounter2 = 'Active';
 			} else if(_this.ghostcounter2 < 0) {
 				_this.ghostcounter2 += 1;
 			} 

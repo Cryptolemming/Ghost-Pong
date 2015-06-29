@@ -27,19 +27,45 @@ canvas {
 .head {
 	width: 100%;
 	padding-bottom: .5%;
+	text-align: center;
 }
 
 .title {
 	list-style-type: none;
-	display: inline !important;
+	padding-left: 0;
 }
 
 .title > li {
-	float: left;
+	display: inline;
+	
 }
 
 .prefix {
 	font-style: italic;
 	font-weight: 900;
-	margin-left: 47%;
+}
+
+.footer {
+	width: 100%;
+}
+
+.footer-info > li:first-child > a {
+	float: left;
+	font-size: .9em;
+	font-style: italic;
+	color: white;
+	text-decoration: none;
+	margin-left: 5%;
+	opacity: .6;
+}
+
+.footer-info > li:first-child > a:hover {
+	opacity: 1;
+}
+
+.footer-info > li:nth-child(2) {
+	float: right;
+	margin-right: 5%;
+	font-size: .9em;
+	opacity: .6;
 }
