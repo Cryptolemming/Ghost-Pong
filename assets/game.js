@@ -258,41 +258,46 @@
 	
 	// AI 
 	Computer.prototype.update = function(ball) {
-		var _this = this;
-		// take the position of ball top
-		var y_pos = ball.y + this.radius;
-		// take the difference between the center of the paddle and the ball
-		var diff = -(this.paddle.y + this.paddle.height / 2 - y_pos);
-
-		// set AI speed
-		if(diff < 0 && diff < -.02*canvas.height) { // max speed up
-			diff = -.02*canvas.height;
-		} else if(diff > 0 && diff > .02*canvas.height) { // max speed down
-			diff = .02*canvas.height;
-		}
+		var _this = this;		
 		
+		// switch between paddle and ghost
 		activePaddle();
 		
+		// determine which paddle takes focus
 		function activePaddle() {
-			if(!(this.ball.ghostcounter2 === -6)) {
+			// if ghost mode is available
+			if(!(this.ball.ghostcounter2 < 0)) {
+				// show the ghost
 				renderGhost();
-				moveGhost();
+				// declare speed and move ghost
+				paddleActivation(_this.ghost);	
+			// if ghost mode is not available and/or active
 			} else {
-				moveComputer();
+				// make ghost disappear
+				_this.ghost.color = 'rgba(255, 255, 255, 0)';
+				// declare speed and move player
+				paddleActivation(_this.paddle);
 			}
 		}
 		
+		// set AI speed and call movement
+		function paddleActivation(paddle) {
+			var y_pos = ball.y;
+			// regular computer speed vs ghost speed
+			var speed = paddle === _this.paddle ? .02 * canvas.height : .04 * canvas.height;
+			// take the difference between the center of the paddle and the ball
+			var diff = -(paddle.y + paddle.height / 2 - y_pos);
+			if(diff < 0 && diff < -speed) { // max speed up
+				diff = -speed;
+			} else if(diff > 0 && diff > speed) { // max speed down
+				diff = speed;
+			}
+			paddle.move(0, diff);
+		}
+		
+		// show the ghost
 		function renderGhost() {
 			_this.ghost.color = 'rgba(255, 255, 255, .4)';
-		}
-		
-		function moveGhost() {
-			_this.ghost.move(0, diff);
-		}
-		
-		function moveComputer() {
-			_this.ghost.color = 'rgba(255, 255, 255, 0)';
-			_this.paddle.move(0, diff);
 		}
 	};
 	
