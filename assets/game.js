@@ -62,7 +62,7 @@
 		
 		// prevent ghost toggling memory when ghost counter not counted down
 		function isGhostReady(e, keysToggle, ghostcounter1) {
-			this.keysToggle[e.keyCode] = this.keysToggle[e.keyCode] !== true && ghostcounter1.ghostCounter.count === 'Press "g"' ? true : false;
+			this.keysToggle[e.keyCode] = !(this.keysToggle[e.keyCode] === true) && !(ghostcounter1.ghostCounter.count < 0) ? true : false;
 		}
 	});
 	
@@ -218,7 +218,7 @@
 		// switch between player and ghost paddles
 		for(var key in keysDown) {
 			var value = Number(key);
-			if(lowercaseG && ball.ghostcounter1 === 'Press "g"') {
+			if(lowercaseG && !(ball.ghostcounter1 < 0)) {
 				toggleGhost(value);
 			} else {
 				togglePlayer(value);
@@ -482,7 +482,7 @@
 		// ghost counter countdown for the player after ball is hit
 		function ghostCounterOneCountDown() {
 			if(_this.ghostcounter1 === -1) {
-				_this.ghostcounter1 = 'Press "g"';
+				_this.ghostcounter1 = 'Toggle "g"';
 			} else if(_this.ghostcounter1 < 0) {
 				_this.ghostcounter1 += 1;
 			} 
