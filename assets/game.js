@@ -256,6 +256,8 @@
 		};
 	};	
 	
+	var isComputerGhostActive = false;
+	
 	// AI 
 	Computer.prototype.update = function(ball) {
 		var _this = this;		
@@ -266,11 +268,11 @@
 		// determine which paddle takes focus
 		function activePaddle() {
 			// if ghost mode is available
-			if(!(this.ball.ghostcounter2 < 0)) {
+			if(!(this.ball.ghostcounter2 < 0) && isComputerGhostActive) {
 				// show the ghost
 				renderGhost();
 				// declare speed and move ghost
-				paddleActivation(_this.ghost);	
+					
 			// if ghost mode is not available and/or active
 			} else {
 				// make ghost disappear
@@ -282,7 +284,7 @@
 		
 		// set AI speed and call movement
 		function paddleActivation(paddle) {
-			var y_pos = ball.y;
+			var y_pos = ball.y + .01 * canvas.width;
 			// regular computer speed vs ghost speed
 			var speed = paddle === _this.paddle ? .02 * canvas.height : .04 * canvas.height;
 			// take the difference between the center of the paddle and the ball
@@ -298,7 +300,11 @@
 		// show the ghost
 		function renderGhost() {
 			_this.ghost.color = 'rgba(255, 255, 255, .4)';
+			paddleActivation(_this.ghost);
 		}
+		
+		// activate the ghost 33% of the time that it is possible
+		
 	};
 	
 	// paddle movement
@@ -374,6 +380,7 @@
 				// hitting player paddle right of screen
 				playerPaddleHitBall(paddle1);
 				ghostCounterOneCountDown();
+				activateComputerGhost();
 			}
 		  // if ball in range of computer
 		} else if(bottom_x > (canvas.width / 2) && this.x_speed < 0 && ghost2.color === 'rgba(255, 255, 255, .4)') {
@@ -383,6 +390,7 @@
 					ghost2.color = 'rgba(255, 255, 255, 0)';
 				}, 150);
 				this.ghostcounter2 = -5;
+				isComputerGhostActive = false;
 			}
 		} else if(bottom_x < (canvas.width / 2) && ghost2.color !== 'rgba(255, 255, 255, .4)') {
 			if(bottom_x > (paddle2.x + paddle2.width) && top_x < (paddle2.x + paddle2.width) && top_y < (paddle2.y + paddle2.height) && bottom_y > (paddle2.y)) {
@@ -440,6 +448,27 @@
 			_this.x += _this.x_speed;
 		}
 		
+		// generate computer ghost randomly when possible
+		function activateComputerGhost()  {
+			// when the computer ghost is viable
+			if(!(_this.ghostcounter2 < 0)) {
+				// randomly determine if the ghost will appear
+				randomizeComputerGhost();
+			}
+		}
+		
+		// 33% chance of ghost appearing
+		function randomizeComputerGhost() {
+			if(isComputerGhostActive === false) {
+				var random = Math.random();
+				if(random <= .33) {
+					isComputerGhostActive = true;
+				}
+			} else {
+				return true;
+			}
+		}
+		
 		// ghost counter countdown for the player after ball is hit
 		function ghostCounterOneCountDown() {
 			if(_this.ghostcounter1 === -1) {
@@ -452,7 +481,7 @@
 		// ghost counter countdown for the computer after ball is hit
 		function ghostCounterTwoCountDown() {
 			if(_this.ghostcounter2 === -1) {
-				_this.ghostcounter2 = 'AI - random';
+				_this.ghostcounter2 = 'AI = 33% chance';
 			} else if(_this.ghostcounter2 < 0) {
 				_this.ghostcounter2 += 1;
 			} 
