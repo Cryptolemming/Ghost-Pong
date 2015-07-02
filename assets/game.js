@@ -62,7 +62,8 @@
 		
 		// prevent ghost toggling memory when ghost counter not counted down
 		function isGhostReady(e, keysToggle, ghostcounter1) {
-			this.keysToggle[e.keyCode] = !(this.keysToggle[e.keyCode] === true) && !(ghostcounter1.ghostCounter.count < 0) ? true : false;
+			var keySelect = e.keyCode ? e.keyCode : (e.charCode ? e.charCode : e.which);
+			this.keysToggle[keySelect] = !(this.keysToggle[keySelect] === true) && !(ghostcounter1.ghostCounter.count < 0) ? true : false;
 		}
 	});
 	
@@ -224,6 +225,8 @@
 				togglePlayer(value);
 			}
 		};
+		
+		console.log(keysToggle[71]);
 		
 		// player paddle active and ghost paddle not active
 		function togglePlayer(value) {
