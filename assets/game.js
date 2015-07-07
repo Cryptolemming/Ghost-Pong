@@ -290,7 +290,7 @@
 		function paddleActivation(paddle) {
 			var y_pos = ball.y + .01 * canvas.width;
 			// regular computer speed vs ghost speed
-			var speed = paddle === _this.paddle ? .014 * canvas.height : .04 * canvas.height;
+			var speed = paddle === _this.paddle ? .016 * canvas.height : .04 * canvas.height;
 			// take the difference between the center of the paddle and the ball
 			var diff = -(paddle.y + paddle.height / 2 - y_pos);
 			if(diff < 0 && diff < -speed) { // max speed up
